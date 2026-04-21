@@ -40,16 +40,89 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
+		},
+		"./server/rpc": {
+			"types": "./dist/server/rpc/index.d.ts",
+			"default": "./dist/server/rpc/index.js"
+		},
+		"./server/context": {
+			"types": "./dist/server/context/index.d.ts",
+			"default": "./dist/server/context/index.js"
+		},
+		"./server/hono": {
+			"types": "./dist/server/hono/index.d.ts",
+			"default": "./dist/server/hono/index.js"
+		},
+		"./server/sveltekit": {
+			"types": "./dist/server/sveltekit/index.d.ts",
+			"default": "./dist/server/sveltekit/index.js"
+		},
+		"./server/conduit": {
+			"types": "./dist/server/conduit/index.d.ts",
+			"default": "./dist/server/conduit/index.js"
+		},
+		"./server/geo": {
+			"types": "./dist/server/geo/index.d.ts",
+			"default": "./dist/server/geo/index.js"
+		},
+		"./server/auth": {
+			"types": "./dist/server/auth/index.d.ts",
+			"default": "./dist/server/auth/index.js"
+		},
+		"./server/storage": {
+			"types": "./dist/server/storage/index.d.ts",
+			"default": "./dist/server/storage/index.js"
+		},
+		"./client/auth": {
+			"types": "./dist/client/auth.d.ts",
+			"default": "./dist/client/auth.js"
+		},
+		"./client/api": {
+			"types": "./dist/client/api/index.d.ts",
+			"svelte": "./dist/client/api/index.js"
+		},
+		"./client/state": {
+			"types": "./dist/client/state.svelte.d.ts",
+			"svelte": "./dist/client/state.svelte.js"
+		},
+		"./client/conduit": {
+			"types": "./dist/client/conduit/index.d.ts",
+			"svelte": "./dist/client/conduit/index.js"
+		},
+		"./shared/utils": {
+			"types": "./dist/shared/utils/wrapper.d.ts",
+			"default": "./dist/shared/utils/wrapper.js"
+		}
+	},
+	"typesVersions": {
+		">4.0": {
+			"server/rpc": ["./dist/server/rpc/index.d.ts"],
+			"server/context": ["./dist/server/context/index.d.ts"],
+			"server/hono": ["./dist/server/hono/index.d.ts"],
+			"server/sveltekit": ["./dist/server/sveltekit/index.d.ts"],
+			"server/conduit": ["./dist/server/conduit/index.d.ts"],
+			"server/geo": ["./dist/server/geo/index.d.ts"],
+			"server/auth": ["./dist/server/auth/index.d.ts"],
+			"server/storage": ["./dist/server/storage/index.d.ts"],
+			"client/auth": ["./dist/client/auth.d.ts"],
+			"client/api": ["./dist/client/api/index.d.ts"],
+			"client/state": ["./dist/client/state.svelte.d.ts"],
+			"client/conduit": ["./dist/client/conduit/index.d.ts"],
+			"shared/utils": ["./dist/shared/utils/wrapper.d.ts"],
+			"index": ["./dist/index.d.ts"]
 		}
 	},
 	"peerDependencies": {
+		"@sveltejs/kit": "^2.57.0",
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20260420.1",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.57.0",
 		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
+		"@types/node": "^25.6.0",
 		"publint": "^0.3.18",
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",
@@ -63,5 +136,11 @@
 		"ui",
 		"rpc"
 	],
-	"packageManager": "pnpm@10.17.1"
+	"packageManager": "pnpm@10.17.1",
+	"dependencies": {
+		"better-auth": "^1.6.5",
+		"hono": "^4.12.14",
+		"partyserver": "^0.4.1",
+		"zod": "^4.3.6"
+	}
 }
