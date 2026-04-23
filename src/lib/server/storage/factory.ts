@@ -1,29 +1,19 @@
-import { isAudio, isImage, isVideo, getMimeType } from "./mime.js";
-import { createMediaHelpers } from "./media.js";
-import { safeWrapper } from "../../shared/utils/wrapper.js";
-import type { StorageDb, UploadOptions, UploadResult } from "./types.js";
+import { getMimeType, isImage } from "./mime.js";
+import { Hono } from "hono";
+import { z } from "zod";
+import type { UploadOptions, UploadResult } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+type Resolver<T> = T | (() => T);
+
 export type CreateStorageOptions = {
-	/** Return the R2 bucket (called per-request via a context proxy). */
-	getR2: () => R2Bucket;
-	/** Return the canonical base URL for building public file URLs. */
-	getBaseUrl: () => string;
-	/** Schedule background tasks after the response is sent. */
-	waitUntil?: (promise: Promise<unknown>) => void;
-	/**
-	 * Optional URL of your media processing API.
-	 * When provided, video thumbnails and media metadata are extracted.
-	 */
-	mediaApiUrl?: string;
-	/**
-	 * Optional DB adapter for tracking uploaded files.
-	 * When omitted, files are stored in R2 only (no DB record).
-	 */
-	db?: StorageDb;
+	r2: Resolver<R2Bucket>;
+	baseUrl: Resolver<string>;
+	assets?: Resolver<Fetcher>;
+	images?: Resolver<ImagesBinding>;
 };
 
 export type StorageClient = {
@@ -35,6 +25,20 @@ export type StorageClient = {
 	getAsset: (path: string) => Promise<Response>;
 };
 
+export type CreateStorageResult = {
+	storage: StorageClient;
+	assetRoute: Hono;
+};
+
+const transformSchema = z.object({
+	key: z.string().min(1),
+	width: z.coerce.number().int().positive().max(4096).optional(),
+	height: z.coerce.number().int().positive().max(4096).optional(),
+	quality: z.enum(["low", "medium", "high"]).optional(),
+	mode: z.enum(["contain", "cover", "crop", "scale-down"]).optional(),
+	format: z.enum(["auto", "webp", "avif", "jpeg", "png"]).optional(),
+});
+
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
@@ -45,36 +49,33 @@ export type StorageClient = {
  * @example
  * ```ts
  * import { createStorage } from "@logoutrd/app-kit/server/storage";
- * import { getContext, waitUntil } from "@logoutrd/app-kit/server/context";
+ * import { getContext } from "@logoutrd/app-kit/server/context";
  *
  * export const storage = createStorage({
- *   getR2:      () => getContext<Env>().env.STORAGE,
- *   getBaseUrl: () => "https://myapp.com",
- *   waitUntil,
- *   mediaApiUrl: "https://my-media-api.example.com",
- *   db: myStorageDb,
+ *   r2:      () => getContext<Env>().env.STORAGE,
+ *   baseUrl: () => "https://myapp.com",
+ *   assets:  () => getContext<Env>().env.PRIVATE_ASSETS,
  * });
  * ```
  */
-export function createStorage(options: CreateStorageOptions): StorageClient {
-	const { getR2, getBaseUrl, waitUntil, db } = options;
-	const media = createMediaHelpers(options.mediaApiUrl);
+export function createStorage(options: CreateStorageOptions): CreateStorageResult {
+	const resolve = <T>(value: Resolver<T>): T => (typeof value === "function" ? (value as () => T)() : value);
 
 	function getFileUrl(path: string): string {
-		return `${getBaseUrl()}/assets?key=${encodeURIComponent(path)}`;
+		return `${resolve(options.baseUrl)}/assets?key=${encodeURIComponent(path)}`;
 	}
 
 	async function getAsset(path: string): Promise<Response> {
-		// If the project binds an ASSETS fetcher, it should override this implementation.
-		const url = getFileUrl(path);
-		return fetch(url);
+		const url = new URL(path, resolve(options.baseUrl)).toString();
+		const assets = options.assets ? resolve(options.assets) : null;
+		return assets ? assets.fetch(url) : fetch(url);
 	}
 
 	async function upload(
 		input: File | string,
 		opts: UploadOptions = {},
 	): Promise<UploadResult> {
-		const bucket = getR2();
+		const bucket = resolve(options.r2);
 		let file: File;
 		let originalName: string;
 
@@ -102,97 +103,92 @@ export function createStorage(options: CreateStorageOptions): StorageClient {
 			httpMetadata: { contentType: mimeType },
 		});
 
-		const thumbnailPath = isImage(mimeType)
-			? path
-			: isVideo(mimeType)
-				? `${path}_thumbnail.avif`
-				: null;
-
-		const category = isImage(mimeType)
-			? "image"
-			: isVideo(mimeType)
-				? "video"
-				: isAudio(mimeType)
-					? "audio"
-					: "other";
-
-		const baseMeta: Record<string, unknown> = { category, original_name: originalName };
-
-		// Insert DB record if a db adapter was provided
-		const fileRow = db
-			? await db.insertFile({
-					userId: opts.userId,
-					name: originalName,
-					path,
-					type: mimeType,
-					size: file.size,
-					thumbnail: thumbnailPath ?? undefined,
-					meta: baseMeta,
-				})
-			: ({
-					id: crypto.randomUUID(),
-					userId: opts.userId,
-					name: originalName,
-					path,
-					type: mimeType,
-					size: file.size,
-					thumbnail: thumbnailPath,
-					meta: baseMeta,
-				} satisfies import("./types.js").FileRecord);
-
-		const fileUrl = getFileUrl(fileRow.path);
-
-		// Background: extract media info + generate thumbnail
-		const backgroundTask = async () => {
-			const metaUpdates: Record<string, unknown> = {};
-
-			if (isImage(mimeType) || isVideo(mimeType) || isAudio(mimeType)) {
-				const { data: info, error } = await safeWrapper(() => media.getInfo(fileUrl));
-				if (error) console.error("[storage] media.getInfo error:", error.message);
-				else if (info) Object.assign(metaUpdates, { width: info.width, height: info.height, duration: info.duration });
-			}
-
-			if (isVideo(mimeType) && thumbnailPath) {
-				const { data: thumb, error } = await safeWrapper(() =>
-					media.getThumbnail(fileUrl, { width: 320, height: 180 }),
-				);
-				if (error) console.error("[storage] thumbnail error:", error.message);
-				else if (thumb) {
-					await bucket.put(thumbnailPath, await thumb.file.arrayBuffer(), {
-						httpMetadata: { contentType: "image/png" },
-					});
-				}
-			}
-
-			if (db && Object.keys(metaUpdates).length > 0) {
-				await db.updateFileMeta(fileRow.id, { ...baseMeta, ...metaUpdates });
-			}
+		return {
+			id: crypto.randomUUID(),
+			userId: opts.userId,
+			name: originalName,
+			path,
+			type: mimeType,
+			size: file.size,
+			thumbnail: isImage(mimeType) ? path : null,
+			meta: { original_name: originalName },
+			url: getFileUrl(path),
 		};
-
-		if (waitUntil) {
-			waitUntil(backgroundTask());
-		} else {
-			backgroundTask().catch((err) => console.error("[storage] background error:", err));
-		}
-
-		return { ...fileRow, url: fileUrl };
 	}
 
 	async function get(path: string): Promise<R2ObjectBody | null> {
-		return getR2().get(path);
+		return resolve(options.r2).get(path);
 	}
 
 	async function del(path: string): Promise<void> {
-		await getR2().delete(path);
-		if (db) await db.softDeleteFile(path);
+		await resolve(options.r2).delete(path);
 	}
 
-	return {
+	const storage = {
 		upload,
 		get,
 		delete: del,
-		getR2,
+		getR2: () => resolve(options.r2),
 		getFileUrl,
 		getAsset,
 	};
+
+	const assetRoute = new Hono().get("/", async (c) => {
+		const url = new URL(c.req.raw.url);
+		const raw: Record<string, string> = {};
+		url.searchParams.forEach((value, key) => {
+			raw[key] = value;
+		});
+
+		const parsed = transformSchema.safeParse(raw);
+		if (!parsed.success) return c.json({ error: "Validation error", details: parsed.error.flatten() }, 400);
+
+		const input = parsed.data;
+		const cacheKey = new Request(url.toString(), c.req.raw);
+		const cache = (caches as unknown as { default: Cache }).default;
+		const cached = await cache.match(cacheKey);
+		if (cached) return cached;
+
+		const object = await storage.get(input.key);
+		if (!object) return c.json({ error: "Not found" }, 404);
+
+		const contentType = object.httpMetadata?.contentType || "";
+		const shouldTransform =
+			!!options.images &&
+			contentType.startsWith("image/") &&
+			!!(input.width || input.height || input.quality || input.mode || input.format);
+
+		let response: Response;
+		if (shouldTransform) {
+			const imageBody = await object.arrayBuffer();
+			const transform: Record<string, string | number> = {};
+			if (input.width) transform.width = input.width;
+			if (input.height) transform.height = input.height;
+			if (input.mode) transform.fit = input.mode;
+			if (input.format && input.format !== "auto") transform.format = input.format;
+			if (input.quality) transform.quality = { low: 60, medium: 80, high: 95 }[input.quality];
+
+			try {
+				const transformedImage = await resolve(options.images as Resolver<ImagesBinding>)
+					.input(imageBody as never)
+					.transform(transform)
+					.output({ format: "image/avif" });
+				response = transformedImage.response() as unknown as Response;
+			} catch {
+				response = new Response(imageBody);
+			}
+		} else {
+			response = new Response(object.body);
+		}
+
+		const headers = new Headers();
+		object.writeHttpMetadata(headers);
+		headers.set("etag", object.httpEtag);
+		headers.set("cache-control", "public, max-age=31536000, immutable");
+		response = new Response(response.body, { headers });
+		c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+		return response;
+	});
+
+	return { storage, assetRoute };
 }

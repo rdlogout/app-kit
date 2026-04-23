@@ -4,6 +4,7 @@ export type {
 	AuthUser,
 	AuthSession,
 	SessionResult,
+	CreateAuthInput,
 	GetSessionOptions,
 	CreateAuthOptions,
 } from "./types.js";

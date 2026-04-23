@@ -20,7 +20,6 @@ import {
 	getContext,
 	tryGetContext,
 	waitUntil,
-	createEnvProxy,
 } from "@logoutrd/app-kit/server/context";
 ```
 

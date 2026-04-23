@@ -1,4 +1,3 @@
-import type { Context as HonoContext } from "hono";
 import { getContext, tryGetContext } from "./runtime.js";
 
 const HONO_CONTEXT_KEY = "__app_kit_hono_context";
@@ -8,12 +7,12 @@ type HeadersWithSetCookie = Headers & {
 	getSetCookie?: () => string[];
 };
 
-export function setHonoContext(context: HonoContext): void {
+export function setHonoContext(context: unknown): void {
 	getContext().set(HONO_CONTEXT_KEY, context);
 }
 
-export function getHonoContext(): HonoContext | undefined {
-	return tryGetContext()?.get<HonoContext>(HONO_CONTEXT_KEY);
+export function getHonoContext(): unknown {
+	return tryGetContext()?.get(HONO_CONTEXT_KEY);
 }
 
 export function queueSetCookie(cookie: string): void {

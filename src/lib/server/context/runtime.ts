@@ -1,6 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { safeWrapper } from "../../shared/utils/wrapper.js";
-import type { BaseEnv } from "./env.js";
+import type { BaseEnv } from "../env.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,7 +76,7 @@ class RequestContext<TEnv extends BaseEnv> implements AppContext<TEnv> {
 		this._data.set(key, value);
 	}
 
-	/** Apply updates from a new runContext call (nested / middleware). */
+	/** Apply updates from a new wrapContext call (nested / middleware). */
 	update(args: RunContextArgs<TEnv>): void {
 		this.env = args.env;
 		if (args.req) this.req = args.req;
@@ -99,11 +98,11 @@ const storage = new AsyncLocalStorage<RequestContext<BaseEnv>>();
 
 /**
  * Retrieve the current request context.
- * Throws if called outside a `runContext` / `runDOContext` scope.
+ * Throws if called outside a `wrapContext` / `runDOContext` scope.
  */
 export function getContext<TEnv extends BaseEnv = BaseEnv>(): AppContext<TEnv> {
 	const ctx = storage.getStore();
-	if (!ctx) throw new Error("[app-kit] No context found. Wrap your handler in runContext().");
+	if (!ctx) throw new Error("[app-kit] No context found. Wrap your handler in wrapContext().");
 	return ctx as unknown as AppContext<TEnv>;
 }
 
@@ -117,7 +116,7 @@ export function tryGetContext<TEnv extends BaseEnv = BaseEnv>(): AppContext<TEnv
 
 /**
  * Schedule a background promise. Falls back to fire-and-forget if no
- * `waitUntil` was provided to `runContext`.
+ * `waitUntil` was provided to `wrapContext`.
  */
 export function waitUntil(promise: Promise<unknown>): void {
 	const ctx = storage.getStore();
@@ -140,7 +139,7 @@ export function waitUntil(promise: Promise<unknown>): void {
  * // Cloudflare Worker entry
  * export default {
  *   fetch: (req, env, ctx) =>
- *     runContext(() => app.fetch(req, env, ctx), {
+ *     wrapContext(() => app.fetch(req, env, ctx), {
  *       env,
  *       req,
  *       waitUntil: ctx.waitUntil.bind(ctx),
@@ -148,7 +147,7 @@ export function waitUntil(promise: Promise<unknown>): void {
  * };
  * ```
  */
-export function runContext<TEnv extends BaseEnv, T>(
+export function wrapContext<TEnv extends BaseEnv, T>(
 	next: (ctx: AppContext<TEnv>) => T | Promise<T>,
 	args: RunContextArgs<TEnv>,
 ): Promise<T> {
@@ -182,35 +181,8 @@ export function runDOContext<TEnv extends BaseEnv, T>(
 	next: () => T | Promise<T>,
 	doInstance: { env: TEnv; ctx: { waitUntil: (promise: Promise<unknown>) => void } },
 ): Promise<T> {
-	return runContext(() => next(), {
+	return wrapContext(() => next(), {
 		env: doInstance.env,
 		waitUntil: doInstance.ctx.waitUntil.bind(doInstance.ctx),
 	});
 }
-
-/**
- * Create a lazy `Proxy` that reads every property from the **current**
- * request context's `env` at access time — safe as a module-level singleton.
- *
- * @example
- * ```ts
- * export const env = createEnvProxy<Env>();
- * // Inside any handler: env.SECRET reads from the current request's env.
- * ```
- */
-export function createEnvProxy<TEnv extends BaseEnv>(): TEnv {
-	return new Proxy({} as TEnv, {
-		get(_target, key) {
-			if (typeof key !== "string") return undefined;
-			return getContext<TEnv>().env[key];
-		},
-		set(_target, key, value) {
-			if (typeof key !== "string") return false;
-			(getContext<TEnv>().env as Record<string, unknown>)[key] = value;
-			return true;
-		},
-	});
-}
-
-// Re-export safeWrapper so callers can access it from context module too
-export { safeWrapper } from "../../shared/utils/wrapper.js";

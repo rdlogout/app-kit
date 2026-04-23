@@ -45,25 +45,41 @@
 			"types": "./dist/server/rpc/index.d.ts",
 			"default": "./dist/server/rpc/index.js"
 		},
+		"./server": {
+			"types": "./dist/server/index.d.ts",
+			"default": "./dist/server/index.js"
+		},
+		"./server/db": {
+			"types": "./dist/server/db/index.d.ts",
+			"default": "./dist/server/db/index.js"
+		},
+		"./server/email": {
+			"types": "./dist/server/email/index.d.ts",
+			"default": "./dist/server/email/index.js"
+		},
 		"./server/context": {
 			"types": "./dist/server/context/index.d.ts",
 			"default": "./dist/server/context/index.js"
 		},
+		"./server/env": {
+			"types": "./dist/server/env.d.ts",
+			"default": "./dist/server/env.js"
+		},
 		"./server/hono": {
-			"types": "./dist/server/hono/index.d.ts",
-			"default": "./dist/server/hono/index.js"
+			"types": "./dist/server/hono.d.ts",
+			"default": "./dist/server/hono.js"
 		},
 		"./server/sveltekit": {
 			"types": "./dist/server/sveltekit/index.d.ts",
 			"default": "./dist/server/sveltekit/index.js"
 		},
 		"./server/conduit": {
-			"types": "./dist/server/conduit/index.d.ts",
-			"default": "./dist/server/conduit/index.js"
+			"types": "./dist/server/conduit.d.ts",
+			"default": "./dist/server/conduit.js"
 		},
-		"./server/geo": {
-			"types": "./dist/server/geo/index.d.ts",
-			"default": "./dist/server/geo/index.js"
+		"./server/invalidate": {
+			"types": "./dist/server/invalidate.d.ts",
+			"default": "./dist/server/invalidate.js"
 		},
 		"./server/auth": {
 			"types": "./dist/server/auth/index.d.ts",
@@ -96,24 +112,66 @@
 	},
 	"typesVersions": {
 		">4.0": {
-			"server/rpc": ["./dist/server/rpc/index.d.ts"],
-			"server/context": ["./dist/server/context/index.d.ts"],
-			"server/hono": ["./dist/server/hono/index.d.ts"],
-			"server/sveltekit": ["./dist/server/sveltekit/index.d.ts"],
-			"server/conduit": ["./dist/server/conduit/index.d.ts"],
-			"server/geo": ["./dist/server/geo/index.d.ts"],
-			"server/auth": ["./dist/server/auth/index.d.ts"],
-			"server/storage": ["./dist/server/storage/index.d.ts"],
-			"client/auth": ["./dist/client/auth.d.ts"],
-			"client/api": ["./dist/client/api/index.d.ts"],
-			"client/state": ["./dist/client/state.svelte.d.ts"],
-			"client/conduit": ["./dist/client/conduit/index.d.ts"],
-			"shared/utils": ["./dist/shared/utils/wrapper.d.ts"],
-			"index": ["./dist/index.d.ts"]
+			"server": [
+				"./dist/server/index.d.ts"
+			],
+			"server/db": [
+				"./dist/server/db/index.d.ts"
+			],
+			"server/email": [
+				"./dist/server/email/index.d.ts"
+			],
+			"server/rpc": [
+				"./dist/server/rpc/index.d.ts"
+			],
+			"server/context": [
+				"./dist/server/context/index.d.ts"
+			],
+			"server/env": [
+				"./dist/server/env.d.ts"
+			],
+			"server/hono": [
+				"./dist/server/hono.d.ts"
+			],
+			"server/sveltekit": [
+				"./dist/server/sveltekit/index.d.ts"
+			],
+			"server/conduit": [
+				"./dist/server/conduit.d.ts"
+			],
+			"server/invalidate": [
+				"./dist/server/invalidate.d.ts"
+			],
+			"server/auth": [
+				"./dist/server/auth/index.d.ts"
+			],
+			"server/storage": [
+				"./dist/server/storage/index.d.ts"
+			],
+			"client/auth": [
+				"./dist/client/auth.d.ts"
+			],
+			"client/api": [
+				"./dist/client/api/index.d.ts"
+			],
+			"client/state": [
+				"./dist/client/state.svelte.d.ts"
+			],
+			"client/conduit": [
+				"./dist/client/conduit/index.d.ts"
+			],
+			"shared/utils": [
+				"./dist/shared/utils/wrapper.d.ts"
+			],
+			"index": [
+				"./dist/index.d.ts"
+			]
 		}
 	},
 	"peerDependencies": {
 		"@sveltejs/kit": "^2.57.0",
+		"drizzle-orm": "^0.44.0",
+		"postgres": "^3.4.5",
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
@@ -123,6 +181,8 @@
 		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@types/node": "^25.6.0",
+		"drizzle-orm": "^0.44.0",
+		"postgres": "^3.4.5",
 		"publint": "^0.3.18",
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",
@@ -141,6 +201,7 @@
 		"better-auth": "^1.6.5",
 		"hono": "^4.12.14",
 		"partyserver": "^0.4.1",
+		"postal-mime": "^2.7.4",
 		"zod": "^4.3.6"
 	}
 }

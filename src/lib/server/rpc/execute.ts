@@ -1,7 +1,14 @@
 import type { Context } from "hono";
 import { ZodError } from "zod";
-import { getPendingInvalidation } from "../conduit/index.js";
+import { tryGetContext } from "../context/runtime.js";
+import type { ClientInvalidationPayload } from "../invalidate.js";
 import type { RpcProcedure, RpcResponse } from "./types.js";
+
+const PENDING_INVALIDATION_KEY = "__app_kit_invalidate";
+
+function getPendingInvalidation(): ClientInvalidationPayload | undefined {
+	return tryGetContext()?.get<ClientInvalidationPayload>(PENDING_INVALIDATION_KEY);
+}
 
 export async function readRpcInput(request: Request): Promise<unknown> {
 	const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";

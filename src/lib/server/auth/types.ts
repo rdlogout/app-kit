@@ -1,7 +1,5 @@
 import type { betterAuth, BetterAuthOptions } from "better-auth";
 
-type Resolved<T> = T | (() => T);
-
 /** Return type of betterAuth() — what createAuth returns. */
 export type Auth = ReturnType<typeof betterAuth>;
 
@@ -35,26 +33,10 @@ export type GetSessionOptions = {
 export type CreateAuthOptions = {
 	/** Drizzle adapter already configured by the project. */
 	database: BetterAuthOptions["database"];
-	/** Canonical app URL (e.g. https://app.example.com). Falls back to env `domain`. */
-	baseUrl?: Resolved<string>;
-	/** Display name of the application, used in emails etc. Falls back to env `name`. */
-	appName?: Resolved<string>;
-	/** Session signing secret. Falls back to env `secret`. */
-	secret?: Resolved<string>;
-	/**
-	 * Override env key names when your project does not use `name`, `domain`, `secret`.
-	 */
-	envKeys?: {
-		appName?: string;
-		baseUrl?: string;
-		secret?: string;
-	};
-	/** Extra origins to allow in CORS / CSRF checks. */
-	trustedOrigins?: Resolved<string[]>;
 	/** better-auth social providers config. */
-	socialProviders?: Resolved<BetterAuthOptions["socialProviders"]>;
+	socialProviders?: BetterAuthOptions["socialProviders"];
 	/** better-auth plugins array (phoneNumber, organization, magicLink…). */
-	plugins?: BetterAuthOptions["plugins"];
+	plugins?: readonly unknown[];
 	/** Drizzle-level hooks (e.g. beforeCreate user). */
 	databaseHooks?: BetterAuthOptions["databaseHooks"];
 	/** Extra fields to add to the session. */
@@ -76,3 +58,5 @@ export type CreateAuthOptions = {
 	/** Session update window in seconds. Defaults to 1 day. */
 	sessionUpdateAge?: number;
 };
+
+export type CreateAuthInput = CreateAuthOptions | (() => CreateAuthOptions);

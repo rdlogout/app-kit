@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import type { z } from "zod";
-import type { ClientInvalidationPayload } from "../conduit/index.js";
+import type { ClientInvalidationPayload } from "../invalidate.js";
 
 export type RpcResponse<T> =
 	| { data: T; invalidate?: ClientInvalidationPayload }

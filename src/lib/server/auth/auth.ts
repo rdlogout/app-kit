@@ -1,28 +1,28 @@
 import { betterAuth } from "better-auth";
+import type { BetterAuthOptions } from "better-auth";
 import { getContext, tryGetContext } from "../context/runtime.js";
+import { createEnv } from "../env.js";
 import { queueSetCookie, readSetCookieHeaders } from "../context/internal.js";
 import { safeWrapper } from "../../shared/utils/wrapper.js";
 import { AUTH_BASE_PATH } from "../../shared/constants.js";
-import type { Auth, AuthSession, AuthUser, CreateAuthOptions, GetSessionOptions, SessionResult } from "./types.js";
+import type { Auth, AuthSession, AuthUser, CreateAuthInput, CreateAuthOptions, GetSessionOptions, SessionResult } from "./types.js";
 
-function readEnvString(env: Record<string, unknown>, key: string, label: string): string {
-	const value = env[key];
+function readEnvString(env: object, key: string, label: string): string {
+	const values = env as Record<string, unknown>;
+	const value = values[key];
 	if (typeof value === "string" && value.trim()) return value;
 	throw new Error(`[app-kit/auth] Missing ${label} in env key \`${key}\`.`);
 }
 
-function resolveString(
-	value: string | (() => string) | undefined,
-	fallback: () => string,
-): string {
-	if (typeof value === "function") return value();
-	if (typeof value === "string" && value.trim()) return value;
-	return fallback();
-}
+function normalizeOrigin(value: string): string {
+	const input = value.trim();
+	if (!input) return input;
 
-function resolveValue<T>(value: T | (() => T) | undefined): T | undefined {
-	if (typeof value === "function") return (value as () => T)();
-	return value;
+	if (input.startsWith("http://") || input.startsWith("https://")) {
+		return input.replace(/\/+$/, "");
+	}
+
+	return `https://${input.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 }
 
 const USER_KEY = "user";
@@ -77,8 +77,8 @@ async function fetchSession(
 /**
  * Create a lazy `getAuth()` factory.
  *
- * The returned function reads `name`, `domain`, and `secret` from the current
- * request context env by default, caches the Better Auth instance per env
+ * The returned function reads `NAME`, `DOMAIN`, `BASE_URL`, and `SECRET` from
+ * the current request context env, caches the Better Auth instance per env
  * object, and returns it extended with session helpers:
  *
  * - `getSession()`
@@ -100,30 +100,21 @@ async function fetchSession(
  * export type AppAuth = ReturnType<typeof getAuth>;
  * ```
  */
-export function createAuth(options: CreateAuthOptions) {
-	const envKeys = {
-		appName: options.envKeys?.appName ?? "name",
-		baseUrl: options.envKeys?.baseUrl ?? "domain",
-		secret: options.envKeys?.secret ?? "secret",
-	};
-
+export function createAuth(input: CreateAuthInput) {
 	const cache = new WeakMap<object, AuthWithSession>();
+	const env = createEnv();
 
 	const authGetter = function () {
-		const { env } = getContext();
-		const envRef = env as object;
+		const envRef = getContext().env as object;
+		const options = (typeof input === "function" ? input() : input) as CreateAuthOptions;
 		const cached = cache.get(envRef);
 		if (cached) return cached;
 
-		const appName = resolveString(options.appName, () =>
-			readEnvString(env, envKeys.appName, "app name"),
-		);
-		const baseUrl = resolveString(options.baseUrl, () =>
-			readEnvString(env, envKeys.baseUrl, "base url"),
-		);
-		const secret = resolveString(options.secret, () =>
-			readEnvString(env, envKeys.secret, "auth secret"),
-		);
+		const domain = normalizeOrigin(readEnvString(env, "DOMAIN", "domain"));
+		const appName = readEnvString(env, "NAME", "app name");
+		const baseUrl = normalizeOrigin(readEnvString(env, "BASE_URL", "base url"));
+		const secret = readEnvString(env, "SECRET", "auth secret");
+		const trustedOrigins = Array.from(new Set(["http://localhost:5173", normalizeOrigin(domain)]));
 
 		const auth = betterAuth({
 			database: options.database,
@@ -131,11 +122,11 @@ export function createAuth(options: CreateAuthOptions) {
 			basePath: options.basePath ?? AUTH_BASE_PATH,
 			appName,
 			secret,
-			trustedOrigins: resolveValue(options.trustedOrigins),
+			trustedOrigins,
 			advanced: {
 				cookiePrefix: options.cookiePrefix ?? "_auth_",
 			},
-			socialProviders: resolveValue(options.socialProviders),
+			socialProviders: options.socialProviders,
 			emailAndPassword: { enabled: false },
 			session: {
 				expiresIn: options.sessionExpiresIn ?? 60 * 60 * 24 * 7,
@@ -151,7 +142,7 @@ export function createAuth(options: CreateAuthOptions) {
 			},
 			databaseHooks: options.databaseHooks,
 			hooks: options.hooks,
-			plugins: options.plugins,
+			plugins: options.plugins as BetterAuthOptions["plugins"],
 		});
 
 		const withHelpers = Object.assign(auth, {
