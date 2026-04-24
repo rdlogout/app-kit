@@ -77,6 +77,10 @@
 			"types": "./dist/server/conduit.d.ts",
 			"default": "./dist/server/conduit.js"
 		},
+		"./server/durables": {
+			"types": "./dist/server/durables.d.ts",
+			"default": "./dist/server/durables.js"
+		},
 		"./server/invalidate": {
 			"types": "./dist/server/invalidate.d.ts",
 			"default": "./dist/server/invalidate.js"
@@ -139,6 +143,9 @@
 			"server/conduit": [
 				"./dist/server/conduit.d.ts"
 			],
+			"server/durables": [
+				"./dist/server/durables.d.ts"
+			],
 			"server/invalidate": [
 				"./dist/server/invalidate.d.ts"
 			],
@@ -169,10 +176,16 @@
 		}
 	},
 	"peerDependencies": {
+		"@cloudflare/workers-types": "^4.20260420.1",
 		"@sveltejs/kit": "^2.57.0",
 		"drizzle-orm": "^0.44.0",
 		"postgres": "^3.4.5",
 		"svelte": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@cloudflare/workers-types": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260420.1",

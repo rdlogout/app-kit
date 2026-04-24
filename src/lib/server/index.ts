@@ -35,6 +35,9 @@ export type { CronHandler, CronHandlers, ConfigureCronResult } from "./cron.js";
 export { ConduitDO, configureConduit, getConduit } from "./conduit.js";
 export type { ConduitSendOpts, ConfigureConduitOptions } from "./conduit.js";
 
+export { FallbackServer, ServerBase, getDO } from "./durables.js";
+export type { GetDOOptions } from "./durables.js";
+
 export { invalidate } from "./invalidate.js";
 export type { ClientInvalidationPayload, InvalidateInput } from "./invalidate.js";
 

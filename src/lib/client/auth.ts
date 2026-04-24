@@ -47,8 +47,15 @@ export function createAuth(opts: {
 		await opts.onSessionRefreshed?.();
 	}
 
-	return Object.assign(client, {
+	const overrides = {
 		logout,
 		invalidate,
+	};
+
+	return new Proxy(client, {
+		get(target, prop, receiver) {
+			if (prop in overrides) return overrides[prop as keyof typeof overrides];
+			return Reflect.get(target, prop, receiver);
+		},
 	});
 }

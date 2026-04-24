@@ -44,6 +44,14 @@ function readContextEnvValue(ctxEnv: Record<string, unknown>, key: string): unkn
 	return ctxEnv[key];
 }
 
+function readProcessEnvValue(key: string): string | undefined {
+	if (typeof process === "undefined") return undefined;
+	if (!process.env || typeof process.env !== "object") return undefined;
+
+	const value = process.env[key];
+	return typeof value === "string" ? value : undefined;
+}
+
 function readEnvValue(
 	ctxEnv: Record<string, unknown> | undefined,
 	defaults: Record<string, unknown>,
@@ -56,6 +64,9 @@ function readEnvValue(
 
 	const defaultValue = readContextEnvValue(defaults, key);
 	if (defaultValue !== undefined) return defaultValue;
+
+	const processValue = readProcessEnvValue(key);
+	if (processValue !== undefined) return processValue;
 
 	return readContextEnvValue(ENV_DEFAULTS as Record<string, unknown>, key);
 }
@@ -100,15 +111,27 @@ const DERIVED_ENV_READERS: Record<DerivedEnvKey, DerivedEnvReader> = {
 	},
 };
 
+function createEnvKeys(defaults: Record<string, unknown>): string[] {
+	return Array.from(
+		new Set([
+			...Object.keys(ENV_DEFAULTS),
+			...Object.keys(defaults),
+			...Object.keys(DERIVED_ENV_READERS),
+		]),
+	);
+}
+
 export function createEnv<TEnv extends Record<string, unknown> = {}>(
 	defaults: CreateEnvDefaults<TEnv> = {},
 ): CreateEnvResult<TEnv> {
+	const defaultValues = defaults as Record<string, unknown>;
+	const enumerableKeys = createEnvKeys(defaultValues);
+
 	return new Proxy({} as CreateEnvResult<TEnv>, {
 		get(_target, key) {
 			if (typeof key !== "string") return undefined;
 
 			const ctxEnv = tryGetContext<AppEnv<TEnv>>()?.env as Record<string, unknown> | undefined;
-			const defaultValues = defaults as Record<string, unknown>;
 
 			if (key in DERIVED_ENV_READERS) {
 				return DERIVED_ENV_READERS[key as DerivedEnvKey](
@@ -124,6 +147,20 @@ export function createEnv<TEnv extends Record<string, unknown> = {}>(
 			if (typeof key !== "string") return false;
 			(getContext<AppEnv<TEnv>>().env as Record<string, unknown>)[key] = value;
 			return true;
+		},
+		has(_target, key) {
+			return typeof key === "string" && enumerableKeys.includes(key);
+		},
+		ownKeys() {
+			return enumerableKeys;
+		},
+		getOwnPropertyDescriptor(_target, key) {
+			if (typeof key !== "string" || !enumerableKeys.includes(key)) return undefined;
+
+			return {
+				configurable: true,
+				enumerable: true,
+			};
 		},
 	});
 }

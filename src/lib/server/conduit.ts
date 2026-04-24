@@ -1,8 +1,11 @@
-import { getServerByName, Server } from "partyserver";
-import type { Connection, ConnectionContext, WSMessage } from "partyserver";
+import type {
+  Connection,
+  ConnectionContext,
+  WSMessage,
+} from "partyserver";
 import { runDOContext } from "./context/runtime.js";
 import { safeWrapper } from "../shared/utils/wrapper.js";
-import { createEnv } from "./env.js";
+import { getDO, ServerBase } from "./durables.js";
 import type { BaseEnv } from "./env.js";
 
 type DispatchTarget = "all" | "except-current" | "specific";
@@ -21,13 +24,6 @@ type MessageFrame = {
 };
 
 type MessageHandler = (data: unknown, conn: Connection) => unknown;
-
-type GetServerOptions = NonNullable<Parameters<typeof getServerByName>[2]>;
-type ConduitLocationHint = GetServerOptions extends {
-  locationHint?: infer THint;
-}
-  ? THint
-  : never;
 
 type ConduitConnectHandler = (
   userId: string,
@@ -51,9 +47,8 @@ const messageHandlers: Map<string, MessageHandler> = new Map();
 const connectionContexts: Map<string, ConnectionContext> = new Map();
 let onConnectHandler: ConduitConnectHandler | null = null;
 let onCloseHandler: ConduitCloseHandler | null = null;
-const env = createEnv<{ CONDUIT: DurableObjectNamespace<Server> }>();
 
-export class ConduitDO<TEnv extends BaseEnv = BaseEnv> extends Server<TEnv> {
+export class ConduitDO<TEnv extends BaseEnv = BaseEnv> extends ServerBase<TEnv> {
   static options = { hibernate: true };
 
   async onMessage(conn: Connection, msg: WSMessage): Promise<void> {
@@ -172,9 +167,5 @@ export function configureConduit(
 }
 
 export async function getConduit(id: string): Promise<ConduitDO> {
-  const locationHint = env.LOCATION_HINT as ConduitLocationHint | undefined;
-
-  return (await getServerByName(env.CONDUIT, id, {
-    locationHint,
-  })) as unknown as ConduitDO;
+  return getDO<ConduitDO>(id, { binding: "CONDUIT" });
 }

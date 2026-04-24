@@ -1,11 +1,13 @@
 import { createEnv } from "../env.js";
 
 type PutOptions = Parameters<R2Bucket["put"]>[2];
+type UploadMeta = Record<string, string>;
 
 type UploadInput = {
 	file: File | URL;
 	folder: string;
 	path: string;
+	meta?: UploadMeta;
 	options?: PutOptions;
 };
 
@@ -45,12 +47,26 @@ export function createStorage<TEnv extends Record<string, unknown> = {}>(options
 			return prefix ? getBucket().list({ prefix }) : getBucket().list();
 		},
 		downloadFile,
-		async upload(file: File | URL, folder: string, putOptions?: PutOptions) {
+		async upload(
+			file: File | URL,
+			folder: string,
+			meta?: UploadMeta,
+			putOptions?: PutOptions,
+		) {
 			const resolvedFile = file instanceof URL ? await downloadFile(file) : file;
 			const path = joinPath(folder, resolvedFile.name);
-			const input = { file, folder, path, options: putOptions };
+			const uploadOptions = meta
+				? {
+					...putOptions,
+					customMetadata: {
+						...(putOptions?.customMetadata ?? {}),
+						...meta,
+					},
+				}
+				: putOptions;
+			const input = { file, folder, path, meta, options: uploadOptions };
 			await options.beforeUpload?.(input);
-			await getBucket().put(path, resolvedFile, putOptions);
+			await getBucket().put(path, resolvedFile, uploadOptions);
 			await options.afterUpload?.(path, input);
 			return path;
 		},
