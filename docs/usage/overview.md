@@ -11,6 +11,7 @@ Use subpath imports as the primary contract:
 - `@logoutrd/app-kit/client/auth`
 - `@logoutrd/app-kit/client/state`
 - `@logoutrd/app-kit/client/conduit`
+- `@logoutrd/app-kit/ui`
 
 The root package export is convenience-only. Prefer subpaths for clarity and future stability.
 
@@ -54,3 +55,4 @@ When the RPC `data` includes these fields, the client runtime uses them automati
 3. `rpc-server.md`
 4. `rpc-client.md`
 5. `app-state.md`
+6. `ui.md`

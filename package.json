@@ -109,6 +109,86 @@
 			"types": "./dist/client/conduit/index.d.ts",
 			"svelte": "./dist/client/conduit/index.js"
 		},
+		"./ui": {
+			"types": "./dist/ui/index.d.ts",
+			"svelte": "./dist/ui/index.js"
+		},
+		"./ui/button": {
+			"types": "./dist/ui/action/button.svelte.d.ts",
+			"svelte": "./dist/ui/action/button.svelte"
+		},
+		"./ui/dropdown": {
+			"types": "./dist/ui/action/dropdown/index.d.ts",
+			"svelte": "./dist/ui/action/dropdown/index.js"
+		},
+		"./ui/card": {
+			"types": "./dist/ui/display/card.svelte.d.ts",
+			"svelte": "./dist/ui/display/card.svelte"
+		},
+		"./ui/avatar": {
+			"types": "./dist/ui/display/avatar.svelte.d.ts",
+			"svelte": "./dist/ui/display/avatar.svelte"
+		},
+		"./ui/image": {
+			"types": "./dist/ui/display/image.svelte.d.ts",
+			"svelte": "./dist/ui/display/image.svelte"
+		},
+		"./ui/loading": {
+			"types": "./dist/ui/feedback/loading.svelte.d.ts",
+			"svelte": "./dist/ui/feedback/loading.svelte"
+		},
+		"./ui/nav-indicator": {
+			"types": "./dist/ui/feedback/nav-indicator.svelte.d.ts",
+			"svelte": "./dist/ui/feedback/nav-indicator.svelte"
+		},
+		"./ui/progress": {
+			"types": "./dist/ui/feedback/progress.svelte.d.ts",
+			"svelte": "./dist/ui/feedback/progress.svelte"
+		},
+		"./ui/shimmer": {
+			"types": "./dist/ui/feedback/shimmer.svelte.d.ts",
+			"svelte": "./dist/ui/feedback/shimmer.svelte"
+		},
+		"./ui/tooltip": {
+			"types": "./dist/ui/feedback/tooltip.svelte.d.ts",
+			"svelte": "./dist/ui/feedback/tooltip.svelte"
+		},
+		"./ui/form": {
+			"types": "./dist/ui/form/index.d.ts",
+			"svelte": "./dist/ui/form/index.js"
+		},
+		"./ui/input": {
+			"types": "./dist/ui/form/input.svelte.d.ts",
+			"svelte": "./dist/ui/form/input.svelte"
+		},
+		"./ui/otp-input": {
+			"types": "./dist/ui/form/otp-input.svelte.d.ts",
+			"svelte": "./dist/ui/form/otp-input.svelte"
+		},
+		"./ui/select": {
+			"types": "./dist/ui/form/select.svelte.d.ts",
+			"svelte": "./dist/ui/form/select.svelte"
+		},
+		"./ui/textarea": {
+			"types": "./dist/ui/form/textarea.svelte.d.ts",
+			"svelte": "./dist/ui/form/textarea.svelte"
+		},
+		"./ui/checkbox": {
+			"types": "./dist/ui/form/checkbox.svelte.d.ts",
+			"svelte": "./dist/ui/form/checkbox.svelte"
+		},
+		"./ui/file-upload": {
+			"types": "./dist/ui/form/file-upload.svelte.d.ts",
+			"svelte": "./dist/ui/form/file-upload.svelte"
+		},
+		"./ui/sheet": {
+			"types": "./dist/ui/navigation/sheet.svelte.d.ts",
+			"svelte": "./dist/ui/navigation/sheet.svelte"
+		},
+		"./ui/tabs": {
+			"types": "./dist/ui/navigation/tabs/index.d.ts",
+			"svelte": "./dist/ui/navigation/tabs/index.js"
+		},
 		"./shared/utils": {
 			"types": "./dist/shared/utils/wrapper.d.ts",
 			"default": "./dist/shared/utils/wrapper.js"
@@ -167,6 +247,66 @@
 			"client/conduit": [
 				"./dist/client/conduit/index.d.ts"
 			],
+			"ui": [
+				"./dist/ui/index.d.ts"
+			],
+			"ui/button": [
+				"./dist/ui/action/button.svelte.d.ts"
+			],
+			"ui/dropdown": [
+				"./dist/ui/action/dropdown/index.d.ts"
+			],
+			"ui/card": [
+				"./dist/ui/display/card.svelte.d.ts"
+			],
+			"ui/avatar": [
+				"./dist/ui/display/avatar.svelte.d.ts"
+			],
+			"ui/image": [
+				"./dist/ui/display/image.svelte.d.ts"
+			],
+			"ui/loading": [
+				"./dist/ui/feedback/loading.svelte.d.ts"
+			],
+			"ui/nav-indicator": [
+				"./dist/ui/feedback/nav-indicator.svelte.d.ts"
+			],
+			"ui/progress": [
+				"./dist/ui/feedback/progress.svelte.d.ts"
+			],
+			"ui/shimmer": [
+				"./dist/ui/feedback/shimmer.svelte.d.ts"
+			],
+			"ui/tooltip": [
+				"./dist/ui/feedback/tooltip.svelte.d.ts"
+			],
+			"ui/form": [
+				"./dist/ui/form/index.d.ts"
+			],
+			"ui/input": [
+				"./dist/ui/form/input.svelte.d.ts"
+			],
+			"ui/otp-input": [
+				"./dist/ui/form/otp-input.svelte.d.ts"
+			],
+			"ui/select": [
+				"./dist/ui/form/select.svelte.d.ts"
+			],
+			"ui/textarea": [
+				"./dist/ui/form/textarea.svelte.d.ts"
+			],
+			"ui/checkbox": [
+				"./dist/ui/form/checkbox.svelte.d.ts"
+			],
+			"ui/file-upload": [
+				"./dist/ui/form/file-upload.svelte.d.ts"
+			],
+			"ui/sheet": [
+				"./dist/ui/navigation/sheet.svelte.d.ts"
+			],
+			"ui/tabs": [
+				"./dist/ui/navigation/tabs/index.d.ts"
+			],
 			"shared/utils": [
 				"./dist/shared/utils/wrapper.d.ts"
 			],
@@ -179,11 +319,19 @@
 		"@cloudflare/workers-types": "^4.20260420.1",
 		"@sveltejs/kit": "^2.57.0",
 		"drizzle-orm": "^0.44.0",
+		"daisyui": "^5.0.0",
 		"postgres": "^3.4.5",
+		"tailwindcss": "^4.0.0",
 		"svelte": "^5.0.0"
 	},
 	"peerDependenciesMeta": {
 		"@cloudflare/workers-types": {
+			"optional": true
+		},
+		"daisyui": {
+			"optional": true
+		},
+		"tailwindcss": {
 			"optional": true
 		}
 	},
@@ -212,9 +360,11 @@
 	"packageManager": "pnpm@10.17.1",
 	"dependencies": {
 		"better-auth": "^1.6.5",
+		"clsx": "^2.1.1",
 		"hono": "^4.12.14",
 		"partyserver": "^0.4.1",
 		"postal-mime": "^2.7.4",
+		"tailwind-merge": "^3.4.1",
 		"zod": "^4.3.6"
 	}
 }

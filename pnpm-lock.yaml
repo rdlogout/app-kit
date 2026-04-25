@@ -11,6 +11,12 @@ importers:
       better-auth:
         specifier: ^1.6.5
         version: 1.6.5(@cloudflare/workers-types@4.20260420.1)(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.4)(vite@8.0.9(@types/node@25.6.0)))(svelte@5.55.4)(typescript@6.0.3)(vite@8.0.9(@types/node@25.6.0)))(drizzle-orm@0.44.7(@cloudflare/workers-types@4.20260420.1)(@opentelemetry/api@1.9.1)(kysely@0.28.16)(postgres@3.4.9))(svelte@5.55.4)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      daisyui:
+        specifier: ^5.0.0
+        version: 5.5.19
       hono:
         specifier: ^4.12.14
         version: 4.12.14
@@ -20,6 +26,12 @@ importers:
       postal-mime:
         specifier: ^2.7.4
         version: 2.7.4
+      tailwind-merge:
+        specifier: ^3.4.1
+        version: 3.5.0
+      tailwindcss:
+        specifier: ^4.0.0
+        version: 4.2.4
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -452,6 +464,9 @@ packages:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
 
+  daisyui@5.5.19:
+    resolution: {integrity: sha512-pbFAkl1VCEh/MPCeclKL61I/MqRIFFhNU7yiXoDDRapXN4/qNCoMxeCCswyxEEhqL5eiTTfwHvucFtOE71C9sA==}
+
   dedent-js@1.0.1:
     resolution: {integrity: sha512-OUepMozQULMLUmhxS95Vudo0jb0UchLimi3+pQ2plj61Fcy8axbP9hbiD4Sz6DPqn6XG3kfmziVfQ1rSys5AJQ==}
 
@@ -792,6 +807,12 @@ packages:
   svelte@5.55.4:
     resolution: {integrity: sha512-q8DFohk6vUswSng95IZb9nzWJnbINZsK7OiM1snAa3qCjJBL0ZQpvMyAaVXjUukdM75J/m8UE8xwqat8Ors/zQ==}
     engines: {node: '>=18'}
+
+  tailwind-merge@3.5.0:
+    resolution: {integrity: sha512-I8K9wewnVDkL1NTGoqWmVEIlUcB9gFriAEkXkfCjX5ib8ezGxtR3xD7iZIxrfArjEsH7F1CHD4RFUtxefdqV/A==}
+
+  tailwindcss@4.2.4:
+    resolution: {integrity: sha512-HhKppgO81FQof5m6TEnuBWCZGgfRAWbaeOaGT00KOy/Pf/j6oUihdvBpA7ltCeAvZpFhW3j0PTclkxsd4IXYDA==}
 
   tinyglobby@0.2.16:
     resolution: {integrity: sha512-pn99VhoACYR8nFHhxqix+uvsbXineAasWm5ojXoN8xEwK5Kd3/TrhNn1wByuD52UxWRLy8pu+kRMniEi6Eq9Zg==}
@@ -1156,6 +1177,8 @@ snapshots:
 
   cookie@0.6.0: {}
 
+  daisyui@5.5.19: {}
+
   dedent-js@1.0.1: {}
 
   deepmerge@4.3.1: {}
@@ -1377,6 +1400,10 @@ snapshots:
       zimmerframe: 1.1.4
     transitivePeerDependencies:
       - '@typescript-eslint/types'
+
+  tailwind-merge@3.5.0: {}
+
+  tailwindcss@4.2.4: {}
 
   tinyglobby@0.2.16:
     dependencies:

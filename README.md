@@ -12,6 +12,7 @@ This package is scaffolded as a Svelte package using `@sveltejs/package`, with a
 - `docs/usage/rpc-server.md`
 - `docs/usage/rpc-client.md`
 - `docs/usage/app-state.md`
+- `docs/usage/ui.md`
 
 These docs describe the intended public usage contract. Prefer following them over file-level comments while the package is still evolving.
 
